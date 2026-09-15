@@ -4380,7 +4380,6 @@ local function oM(...)
         ["Transparent"]=true;
         ["Theme"]="Dark";
         ["SideBarWidth"]=190;
-        ["HideSearchBar"]=true;
         ["NewElements"]=true;
         ["OpenButton"]={
             ["Enabled"]=true;
@@ -4392,6 +4391,10 @@ local function oM(...)
             ["StrokeThickness"]=2;
         };
 })
+
+Window=p
+p.IgnoreAlerts=true
+
         local B=p:Tag({[ "Title" ]= "Status: Ready" ;
         [ "Color" ]=Color3.fromRGB ( 0 , 255 , 160 ),[ "Border" ]= true })
         local J= 44
