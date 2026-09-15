@@ -2834,6 +2834,12 @@ handler(function()
 					local vector = iData.value85(uidFlag)
 
 					if not isUpdateHatchCursorValid(vector, secondaryNumber) then
+						if not iData.value11.firstGrabDelay then
+							iData.value11.firstGrabDelay = true
+							iData.value20("First grab - waiting 10s before tween...", 10)
+							task.wait(10)
+						end
+
 						updateGoToTreadmill(vector, secondaryNumber, isValid)
 
 						if not iData.value86() then
