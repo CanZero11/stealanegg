@@ -1,0 +1,328 @@
+-- ============================================================
+-- 🔥 SCRIPT DELTA EXECUTOR - STEAL AN EGG 🔥
+-- MADE BY Can_zero ! 😈
+-- ============================================================
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local root = character:WaitForChild("HumanoidRootPart")
+
+-- ============================================================
+-- 📌 VARIABEL GLOBAL
+-- ============================================================
+local eggFolder = "Eggs" -- Ganti sesuai folder egg di game
+local treadmillPart = "Treadmill" -- Ganti sesuai nama part treadmill
+local monsterFolder = "Monsters" -- Ganti sesuai folder monster
+
+local isAutoSteal = false
+local isAutoTreadmill = false
+local isAutoFeed = false
+local isHubOpen = false
+
+local eggPriority = {
+    ["Cosmic"] = 100,
+    ["Eternal"] = 90,
+    ["Legendary"] = 70,
+    ["Epic"] = 50,
+    ["Rare"] = 30,
+    ["Common"] = 10
+}
+
+-- ============================================================
+-- 📌 FUNGSI UTILITY
+-- ============================================================
+function getClosestEgg()
+    local eggs = workspace:FindFirstChild(eggFolder)
+    if not eggs then return nil end
+    local closest = nil
+    local closestDist = math.huge
+    for _, egg in ipairs(eggs:GetChildren()) do
+        if egg:IsA("Part") or egg:IsA("Model") then
+            local pos = egg.Position
+            local dist = (root.Position - pos).Magnitude
+            local priority = eggPriority[egg.Name] or 10
+            if dist < closestDist and priority > 0 then
+                closest = egg
+                closestDist = dist
+            end
+        end
+    end
+    return closest
+end
+
+function getTreadmill()
+    return workspace:FindFirstChild(treadmillPart)
+end
+
+function getMonsters()
+    return workspace:FindFirstChild(monsterFolder)
+end
+
+function teleportTo(target)
+    if target then
+        root.CFrame = CFrame.new(target.Position + Vector3.new(0, 3, 0))
+        wait(0.5)
+    end
+end
+
+function notify(title, text, duration)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration or 3
+    })
+end
+
+-- ============================================================
+-- 📌 AUTO STEAL EGG (PRIORITAS COSMIC & ETERNAL)
+-- ============================================================
+function autoStealEgg()
+    while isAutoSteal do
+        local egg = getClosestEgg()
+        if egg then
+            teleportTo(egg)
+            wait(0.3)
+            -- Simulasi steal (klik / action)
+            local action = egg:FindFirstChild("ClickDetector") or egg:FindFirstChild("ProximityPrompt")
+            if action then
+                if action:IsA("ClickDetector") then
+                    fireclickdetector(action)
+                elseif action:IsA("ProximityPrompt") then
+                    action:InputHold()
+                    wait(0.5)
+                    action:InputRelease()
+                end
+            end
+            notify("🥚 STEAL EGG", "Mencuri: " .. egg.Name, 2)
+        end
+        wait(1)
+    end
+end
+
+-- ============================================================
+-- 📌 AUTO TREADMILL (NAIKIN SPEED)
+-- ============================================================
+function autoTreadmill()
+    while isAutoTreadmill do
+        local tm = getTreadmill()
+        if tm then
+            teleportTo(tm)
+            wait(0.5)
+            -- Simulasi naik treadmill
+            humanoid.WalkSpeed = humanoid.WalkSpeed + 0.5
+            if humanoid.WalkSpeed > 50 then
+                humanoid.WalkSpeed = 16 -- reset
+            end
+            notify("🏃 AUTO TREADMILL", "Speed: " .. math.floor(humanoid.WalkSpeed), 1)
+        end
+        wait(3)
+    end
+end
+
+-- ============================================================
+-- 📌 AUTO FEED MONSTER
+-- ============================================================
+function autoFeedMonster()
+    while isAutoFeed do
+        local monsters = getMonsters()
+        if monsters then
+            for _, monster in ipairs(monsters:GetChildren()) do
+                if monster:IsA("Model") or monster:IsA("Part") then
+                    teleportTo(monster)
+                    wait(0.5)
+                    -- Simulasi feed (klik / action)
+                    local action = monster:FindFirstChild("ClickDetector") or monster:FindFirstChild("ProximityPrompt")
+                    if action then
+                        if action:IsA("ClickDetector") then
+                            fireclickdetector(action)
+                        elseif action:IsA("ProximityPrompt") then
+                            action:InputHold()
+                            wait(0.5)
+                            action:InputRelease()
+                        end
+                    end
+                    notify("🍖 FEED MONSTER", "Memberi makan: " .. monster.Name, 2)
+                end
+            end
+        end
+        wait(2)
+    end
+end
+
+-- ============================================================
+-- 📌 HUB SCRIPT AZKA (GUI)
+-- ============================================================
+function openHub()
+    if isHubOpen then return end
+    isHubOpen = true
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AzkaHub"
+    screenGui.Parent = player.PlayerGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 400, 0, 500)
+    frame.Position = UDim2.new(0.5, -200, 0.5, -250)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.fromRGB(255, 215, 0)
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = screenGui
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.BackgroundColor3 = Color3.fromRGB(40, 40, 80)
+    title.Text = "🔥 AZKA HUB 🔥"
+    title.TextColor3 = Color3.fromRGB(255, 215, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.Bold
+    title.Parent = frame
+
+    -- Close button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 40, 0, 30)
+    closeBtn.Position = UDim2.new(1, -45, 0, 5)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.TextScaled = true
+    closeBtn.Font = Enum.Font.Bold
+    closeBtn.Parent = frame
+    closeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+        isHubOpen = false
+    end)
+
+    -- Tombol Auto Steal
+    local btnSteal = Instance.new("TextButton")
+    btnSteal.Size = UDim2.new(0.9, 0, 0, 40)
+    btnSteal.Position = UDim2.new(0.05, 0, 0.15, 0)
+    btnSteal.BackgroundColor3 = Color3.fromRGB(30, 60, 120)
+    btnSteal.Text = "🥚 AUTO STEAL EGG (COSMIC/ETERNAL)"
+    btnSteal.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnSteal.TextScaled = true
+    btnSteal.Font = Enum.Font.Bold
+    btnSteal.Parent = frame
+    btnSteal.MouseButton1Click:Connect(function()
+        isAutoSteal = not isAutoSteal
+        btnSteal.BackgroundColor3 = isAutoSteal and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(30, 60, 120)
+        btnSteal.Text = isAutoSteal and "✅ AUTO STEAL ON" or "🥚 AUTO STEAL EGG"
+        if isAutoSteal then
+            spawn(autoStealEgg)
+        end
+    end)
+
+    -- Tombol Auto Treadmill
+    local btnTreadmill = Instance.new("TextButton")
+    btnTreadmill.Size = UDim2.new(0.9, 0, 0, 40)
+    btnTreadmill.Position = UDim2.new(0.05, 0, 0.32, 0)
+    btnTreadmill.BackgroundColor3 = Color3.fromRGB(30, 120, 60)
+    btnTreadmill.Text = "🏃 AUTO TREADMILL (SPEED)"
+    btnTreadmill.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnTreadmill.TextScaled = true
+    btnTreadmill.Font = Enum.Font.Bold
+    btnTreadmill.Parent = frame
+    btnTreadmill.MouseButton1Click:Connect(function()
+        isAutoTreadmill = not isAutoTreadmill
+        btnTreadmill.BackgroundColor3 = isAutoTreadmill and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(30, 120, 60)
+        btnTreadmill.Text = isAutoTreadmill and "✅ TREADMILL ON" or "🏃 AUTO TREADMILL"
+        if isAutoTreadmill then
+            spawn(autoTreadmill)
+        end
+    end)
+
+    -- Tombol Auto Feed
+    local btnFeed = Instance.new("TextButton")
+    btnFeed.Size = UDim2.new(0.9, 0, 0, 40)
+    btnFeed.Position = UDim2.new(0.05, 0, 0.49, 0)
+    btnFeed.BackgroundColor3 = Color3.fromRGB(120, 60, 30)
+    btnFeed.Text = "🍖 AUTO FEED MONSTER"
+    btnFeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnFeed.TextScaled = true
+    btnFeed.Font = Enum.Font.Bold
+    btnFeed.Parent = frame
+    btnFeed.MouseButton1Click:Connect(function()
+        isAutoFeed = not isAutoFeed
+        btnFeed.BackgroundColor3 = isAutoFeed and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(120, 60, 30)
+        btnFeed.Text = isAutoFeed and "✅ FEED ON" or "🍖 AUTO FEED MONSTER"
+        if isAutoFeed then
+            spawn(autoFeedMonster)
+        end
+    end)
+
+    -- Tombol Stop All
+    local btnStop = Instance.new("TextButton")
+    btnStop.Size = UDim2.new(0.9, 0, 0, 40)
+    btnStop.Position = UDim2.new(0.05, 0, 0.66, 0)
+    btnStop.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+    btnStop.Text = "⛔ STOP ALL"
+    btnStop.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnStop.TextScaled = true
+    btnStop.Font = Enum.Font.Bold
+    btnStop.Parent = frame
+    btnStop.MouseButton1Click:Connect(function()
+        isAutoSteal = false
+        isAutoTreadmill = false
+        isAutoFeed = false
+        btnSteal.BackgroundColor3 = Color3.fromRGB(30, 60, 120)
+        btnSteal.Text = "🥚 AUTO STEAL EGG"
+        btnTreadmill.BackgroundColor3 = Color3.fromRGB(30, 120, 60)
+        btnTreadmill.Text = "🏃 AUTO TREADMILL"
+        btnFeed.BackgroundColor3 = Color3.fromRGB(120, 60, 30)
+        btnFeed.Text = "🍖 AUTO FEED MONSTER"
+        notify("⛔ STOP", "Semua auto dinonaktifkan!", 2)
+    end)
+
+    -- Info
+    local info = Instance.new("TextLabel")
+    info.Size = UDim2.new(1, 0, 0, 30)
+    info.Position = UDim2.new(0, 0, 0.83, 0)
+    info.BackgroundColor3 = Color3.fromRGB(0, 0, 0, 0.5)
+    info.Text = "🔥 MADE BY ZAMZZZ - STEAL AN EGG 🔥"
+    info.TextColor3 = Color3.fromRGB(255, 215, 0)
+    info.TextScaled = true
+    info.Font = Enum.Font.Bold
+    info.Parent = frame
+end
+
+-- ============================================================
+-- 📌 TOMBOL UNTUK BUKA HUB
+-- ============================================================
+-- Jalankan ini di executor: /azka atau ketik "azka" di chat
+game:GetService("Chat").Chatted:Connect(function(msg)
+    if string.lower(msg) == "/azka" or string.lower(msg) == "azka" then
+        openHub()
+        notify("🔥 AZKA HUB", "Hub script berhasil dibuka!", 3)
+    end
+end)
+
+-- Hotkey: Ctrl + A untuk buka hub
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.A and input.UserInputType == Enum.UserInputType.Keyboard and game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.LeftControl) then
+        openHub()
+        notify("🔥 AZKA HUB", "Hub script berhasil dibuka!", 3)
+    end
+end)
+
+-- ============================================================
+-- 📌 INISIALISASI
+-- ============================================================
+notify("🔥 SCRIPT LOADED", "Steal An Egg - By Zamzzz 😈", 5)
+
+-- Auto jalankan jika user mau (comment/uncomment)
+-- spawn(autoStealEgg)
+-- spawn(autoTreadmill)
+-- spawn(autoFeedMonster)
+
+print("🔥 SCRIPT ZAMZZZ UNTUK STEAL AN EGG AKTIF!")
+print("💀 Gunakan /azka atau Ctrl+A untuk buka Hub!")
+print("😈 SELAMAT MENCOBA TUAN!")
+
+-- ============================================================
+-- 📌 FITUR TAMBAHAN: SECRET COSMIC ETERNAL PRIORITY
+-- ============================================================
+-- Sudah ada di eggPriority, auto ambil yang paling langka duluan!
+-- ============================================================
